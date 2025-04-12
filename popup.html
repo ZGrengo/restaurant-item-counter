@@ -3,26 +3,45 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Counter</title>
+        <title>Goikounter</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
                 background: #202020;
                 color: white;
                 text-align: center;
-                width: 200px;
+                width: 240px;
                 padding: 20px;
             }
-            #counter {
-                font-size: 24px;
+
+            h1 {
+                font-size: 20px;
+                margin-bottom: 10px;
+            }
+
+            .count {
+                font-size: 20px;
                 font-weight: bold;
+                margin: 5px 0;
+            }
+
+            .label {
+                font-size: 14px;
+                margin: 0;
             }
         </style>
     </head>
     <body>
-        <h1>🍟 Counter</h1>
-        <p>Patatas Finas encontradas:</p>
-        <p id="counter">0</p>
+        <h1>🍟 Goikounter</h1>
+
+        <p class="label">Patatas Finas:</p>
+        <p id="counter" class="count">0</p>
+
+        <p class="label">🥖 Panes Grandes:</p>
+        <p id="panGrande" class="count">0</p>
+
+        <p class="label">🥐 Panes Pequeños:</p>
+        <p id="panPequeno" class="count">0</p>
 
         <script src="popup.js"></script>
     </body>

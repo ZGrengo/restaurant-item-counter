@@ -1,19 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
-    function updateCounter() {
-        chrome.storage.local.get("patatasFinas", (data) => {
-            console.log("📢 Leyendo de chrome.storage:", data.patatasFinas); // ✅ Log para ver el valor
-            document.getElementById("counter").innerText =
-                data.patatasFinas || 0;
-        });
+    function updateCounters() {
+        chrome.storage.local.get(
+            ["patatasFinas", "panGrande", "panPequeno"],
+            (data) => {
+                console.log("📦 Datos desde storage:", data);
+
+                document.getElementById("counter").innerText =
+                    data.patatasFinas ?? 0;
+                document.getElementById("panGrande").innerText =
+                    data.panGrande ?? 0;
+                document.getElementById("panPequeno").innerText =
+                    data.panPequeno ?? 0;
+            }
+        );
     }
 
-    // Cargar el valor al abrir el popup
-    updateCounter();
+    updateCounters();
 
-    // Escuchar cambios en `chrome.storage` y actualizar el popup en tiempo real
     chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (changes.patatasFinas) {
-            updateCounter();
+        if (changes.patatasFinas || changes.panGrande || changes.panPequeno) {
+            updateCounters();
         }
     });
 });
