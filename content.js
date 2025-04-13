@@ -30,7 +30,7 @@ function normalizeText(text) {
         .toLowerCase(); // fuerza minúsculas
 }
 
-function displayFloatingWindow(count) {
+function displayFinasFloatingWindow(count) {
     let floatDiv = document.getElementById("burger-counter-float");
 
     if (!floatDiv) {
@@ -38,7 +38,7 @@ function displayFloatingWindow(count) {
         floatDiv.id = "burger-counter-float";
         floatDiv.style.position = "fixed";
         floatDiv.style.bottom = "20px";
-        floatDiv.style.right = "20px";
+        floatDiv.style.left = "20px";
         floatDiv.style.background = "rgba(0,0,0,0.8)";
         floatDiv.style.color = "#fff";
         floatDiv.style.padding = "15px";
@@ -50,8 +50,7 @@ function displayFloatingWindow(count) {
 
     floatDiv.innerHTML = `<strong>Conteo de Patatas Finas: ${count}</strong>`;
 }
-
-function displayPanFloatingWindow(grandes, pequenos) {
+function displayPanFloatingWindow(grandes, pequenos, orden = "") {
     let id = "pan-counter-float";
     let floatDiv = document.getElementById(id);
 
@@ -73,15 +72,18 @@ function displayPanFloatingWindow(grandes, pequenos) {
     floatDiv.innerHTML = `
         <strong>Panes:</strong><br>
         🥖 Grandes: ${grandes}<br>
-        🥐 Pequeños: ${pequenos}
+        🥐 Pequeños: ${pequenos}<br>
+        <div style="margin-top:10px;font-size:12px;">
+            🧾 Orden: <br>${orden}
+        </div>
     `;
 }
 
-//Funcion para contar panes
 function countPanes() {
     let items = document.querySelectorAll(".item-name.ng-binding");
     let panG = 0;
     let panP = 0;
+    let panOrder = [];
 
     items.forEach((item) => {
         let rawText = item.innerText.trim();
@@ -89,27 +91,60 @@ function countPanes() {
             rawText.replace(/^(\d+\s*x\s*)/, "").trim()
         );
 
-        let panType = burgerPanMap[burgerName.toLowerCase()];
+        let panType = burgerPanMap[burgerName];
 
-        if (panType === "G") panG++;
-        else if (panType === "P") panP++;
-        else console.warn("❓ Burger no encontrada en el mapa:", burgerName);
+        if (panType === "G") {
+            panG++;
+            panOrder.push("Gr");
+        } else if (panType === "P") {
+            panP++;
+            panOrder.push("Pq");
+        } else {
+            console.warn("❓ Burger no encontrada en el mapa:", burgerName);
+        }
     });
 
-    console.log(`🥖 Panes Grandes: ${panG} | 🥐 Panes Pequeños: ${panP}`);
+    // Agrupar el orden por secuencias consecutivas
+    let finalOrder = [];
+    let current = null;
+    let count = 0;
 
-    // Guardar en storage para que popup lo pueda leer
+    for (let i = 0; i <= panOrder.length; i++) {
+        if (panOrder[i] === current) {
+            count++;
+        } else {
+            if (current !== null) {
+                finalOrder.push(`${current}x${count}`);
+            }
+            current = panOrder[i];
+            count = 1;
+        }
+    }
+
+    const ordenString = finalOrder.join("-");
+
+    console.log(`🥖 Panes Grandes: ${panG} | 🥐 Panes Pequeños: ${panP}`);
+    console.log("📋 Orden de panes:", ordenString);
+
+    // Guardar en storage para que popup pueda accederlo también
     try {
-        chrome.storage.local.set({ panGrande: panG, panPequeno: panP }, () => {
-            console.log("📌 Guardado en storage:", count);
-        });
+        chrome.storage.local.set(
+            {
+                panGrande: panG,
+                panPequeno: panP,
+                ordenPanes: ordenString,
+            },
+            () => {
+                console.log("📌 Orden guardado en storage");
+            }
+        );
     } catch (err) {
         console.warn("⚠ Error al guardar en storage:", err.message);
     }
 
-    displayPanFloatingWindow(panG, panP);
+    // Mostrar ventana flotante
+    displayPanFloatingWindow(panG, panP, ordenString);
 }
-
 // Funcion para contar finas
 function countFinas() {
     let items = document.querySelectorAll(
@@ -137,7 +172,7 @@ function countFinas() {
         console.warn("⚠ Error al guardar en storage:", err.message);
     }
 
-    displayFloatingWindow(count);
+    displayFinasFloatingWindow(count);
 }
 
 // Ejecutar cada 3 segundos para actualizar la información
