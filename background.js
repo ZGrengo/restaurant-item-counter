@@ -4,16 +4,10 @@ chrome.runtime.onInstalled.addListener(() => {
             patatasFinas: 0,
             panGrande: 0,
             panPequeno: 0,
+            ordenPanes: "",
         },
         () => {
-            console.log("📦 Storage inicializado en background.");
+            console.log("✅ Storage inicializado en background");
         }
     );
-});
-
-chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
-    chrome.scripting.executeScript({
-        target: { tabId: details.tabId },
-        files: ["content.js"],
-    });
 });

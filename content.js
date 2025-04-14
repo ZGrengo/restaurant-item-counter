@@ -12,6 +12,7 @@ const burgerPanMap = {
     pigma: "G",
     moza: "G",
     kikiller: "G",
+    "the beast": "G",
     "don vito": "P",
     "mas-s-mash": "P",
     "hat trick": "P",
@@ -25,68 +26,83 @@ const burgerPanMap = {
 
 function normalizeText(text) {
     return text
-        .normalize("NFD") // separa letras de acentos
-        .replace(/[\u0300-\u036f]/g, "") // remueve acentos
-        .toLowerCase(); // fuerza minúsculas
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
 }
 
-function displayFinasFloatingWindow(count) {
-    let floatDiv = document.getElementById("burger-counter-float");
+// Ventana flotante unificada
+function displayFloatingDashboard(panG, panP, orden, patatasFinas) {
+    let wrapper = document.getElementById("goikounter-wrapper");
 
-    if (!floatDiv) {
-        floatDiv = document.createElement("div");
-        floatDiv.id = "burger-counter-float";
-        floatDiv.style.position = "fixed";
-        floatDiv.style.bottom = "20px";
-        floatDiv.style.left = "20px";
-        floatDiv.style.background = "rgba(0,0,0,0.8)";
-        floatDiv.style.color = "#fff";
-        floatDiv.style.padding = "15px";
-        floatDiv.style.borderRadius = "8px";
-        floatDiv.style.fontFamily = "Arial, sans-serif";
-        floatDiv.style.zIndex = "9999";
-        document.body.appendChild(floatDiv);
+    if (!wrapper) {
+        wrapper = document.createElement("div");
+        wrapper.id = "goikounter-wrapper";
+        wrapper.style.position = "fixed";
+        wrapper.style.top = "2px";
+        wrapper.style.left = "140px";
+        wrapper.style.display = "flex";
+        wrapper.style.flexDirection = "row";
+        wrapper.style.gap = "12px";
+        wrapper.style.zIndex = "9999";
+        document.body.appendChild(wrapper);
     }
 
-    floatDiv.innerHTML = `<strong>Conteo de Patatas Finas: ${count}</strong>`;
-}
-function displayPanFloatingWindow(grandes, pequenos, orden = "") {
-    let id = "pan-counter-float";
-    let floatDiv = document.getElementById(id);
-
-    if (!floatDiv) {
-        floatDiv = document.createElement("div");
-        floatDiv.id = id;
-        floatDiv.style.position = "fixed";
-        floatDiv.style.bottom = "70px";
-        floatDiv.style.right = "20px";
-        floatDiv.style.background = "rgba(0,0,0,0.8)";
-        floatDiv.style.color = "#fff";
-        floatDiv.style.padding = "15px";
-        floatDiv.style.borderRadius = "8px";
-        floatDiv.style.fontFamily = "Arial, sans-serif";
-        floatDiv.style.zIndex = "9999";
-        document.body.appendChild(floatDiv);
+    // Contenedor de panes
+    let panesDiv = document.getElementById("goikounter-panes");
+    if (!panesDiv) {
+        panesDiv = document.createElement("div");
+        panesDiv.id = "goikounter-panes";
+        panesDiv.style.background = "#0B83C8";
+        panesDiv.style.color = "#fff";
+        panesDiv.style.padding = "10px";
+        panesDiv.style.borderRadius = "8px";
+        panesDiv.style.fontFamily = "Arial, sans-serif";
+        panesDiv.style.fontSize = "16px";
+        panesDiv.style.minWidth = "130px";
+        panesDiv.style.boxShadow = "0 0 6px rgba(0,0,0,0.4)";
+        wrapper.appendChild(panesDiv);
     }
 
-    floatDiv.innerHTML = `
-        <strong>Panes:</strong><br>
-        🥖 Grandes: ${grandes}<br>
-        🥐 Pequeños: ${pequenos}<br>
-        <div style="margin-top:10px;font-size:12px;">
-            🧾 Orden: <br>${orden}
-        </div>
+    panesDiv.innerHTML = `
+        Panes🥖 G: ${panG} / P: ${panP}<br>
+        <span style="font-size:16px;opacity:0.8;font-weight:600;">${orden}</span>
+    `;
+
+    // Contenedor patatas
+    let patatasDiv = document.getElementById("goikounter-patatas");
+    if (!patatasDiv) {
+        patatasDiv = document.createElement("div");
+        patatasDiv.id = "goikounter-patatas";
+        patatasDiv.style.background = "#0B83C8";
+        patatasDiv.style.color = "#fff";
+        patatasDiv.style.padding = "10px";
+        patatasDiv.style.borderRadius = "8px";
+        patatasDiv.style.fontFamily = "Arial, sans-serif";
+        patatasDiv.style.fontSize = "16px";
+        patatasDiv.style.minWidth = "90px";
+        patatasDiv.style.boxShadow = "0 0 6px rgba(0,0,0,0.4)";
+        wrapper.appendChild(patatasDiv);
+    }
+
+    patatasDiv.innerHTML = `
+        <strong>Patatas 🍟 </strong><br>
+         Finas: ${patatasFinas}
     `;
 }
 
+// Contar panes
 function countPanes() {
-    let items = document.querySelectorAll(".item-name.ng-binding");
+    const items = document.querySelectorAll(".item-name.ng-binding");
     let panG = 0;
     let panP = 0;
     let panOrder = [];
 
     items.forEach((item) => {
-        let rawText = item.innerText.trim();
+        let rawText = item.innerText.trim(); // "2 x Kevin Bacon"
+        let match = rawText.match(/^(\d+)\s*x\s*/);
+        let quantity = match ? parseInt(match[1]) : 1;
+
         let burgerName = normalizeText(
             rawText.replace(/^(\d+\s*x\s*)/, "").trim()
         );
@@ -94,11 +110,11 @@ function countPanes() {
         let panType = burgerPanMap[burgerName];
 
         if (panType === "G") {
-            panG++;
-            panOrder.push("Gr");
+            panG += quantity;
+            for (let i = 0; i < quantity; i++) panOrder.push("Gr");
         } else if (panType === "P") {
-            panP++;
-            panOrder.push("Pq");
+            panP += quantity;
+            for (let i = 0; i < quantity; i++) panOrder.push("Pq");
         } else {
             console.warn("❓ Burger no encontrada en el mapa:", burgerName);
         }
@@ -123,59 +139,78 @@ function countPanes() {
 
     const ordenString = finalOrder.join("-");
 
-    console.log(`🥖 Panes Grandes: ${panG} | 🥐 Panes Pequeños: ${panP}`);
-    console.log("📋 Orden de panes:", ordenString);
-
-    // Guardar en storage para que popup pueda accederlo también
-    try {
-        chrome.storage.local.set(
-            {
-                panGrande: panG,
-                panPequeno: panP,
-                ordenPanes: ordenString,
-            },
-            () => {
-                console.log("📌 Orden guardado en storage");
-            }
-        );
-    } catch (err) {
-        console.warn("⚠ Error al guardar en storage:", err.message);
-    }
-
-    // Mostrar ventana flotante
-    displayPanFloatingWindow(panG, panP, ordenString);
-}
-// Funcion para contar finas
-function countFinas() {
-    let items = document.querySelectorAll(
-        ".item-variation.ng-scope span.ng-binding"
+    // Guardar también en storage (opcional)
+    chrome.storage.local.set(
+        {
+            panGrande: panG,
+            panPequeno: panP,
+            ordenPanes: ordenString,
+        },
+        () => console.log("📌 Panes guardados")
     );
-    let count = 0;
 
-    items.forEach((item) => {
-        let productText = item.innerText.trim();
-        if (
-            productText.includes("Patatas Finas") ||
-            productText.includes("House fries")
-        ) {
-            count++;
-        }
+    // Compartir datos para la ventana flotante
+    window._goikoState = window._goikoState || {};
+    window._goikoState.panG = panG;
+    window._goikoState.panP = panP;
+    window._goikoState.orden = ordenString;
+
+    if (window._goikoState.patatas !== undefined) {
+        displayFloatingDashboard(
+            panG,
+            panP,
+            ordenString,
+            window._goikoState.patatas
+        );
+    }
+}
+
+// Contar Patatas Finas
+function countFinas() {
+    let orders = document.querySelectorAll(".item-name.ng-binding");
+    let totalFinas = 0;
+
+    orders.forEach((item) => {
+        let rawText = item.innerText.trim(); // "2 x Kevin Bacon"
+        let match = rawText.match(/^(\d+)\s*x\s*/);
+        let quantity = match ? parseInt(match[1]) : 1;
+
+        const variationContainer = item.parentElement.querySelectorAll(
+            ".item-variation.ng-scope span.ng-binding"
+        );
+
+        variationContainer.forEach((span) => {
+            let text = span.innerText.trim();
+            if (
+                text.includes("Patatas Finas") ||
+                text.includes("House fries")
+            ) {
+                totalFinas += quantity;
+            }
+        });
     });
 
-    console.log("✅ Cantidad de 'Patatas Finas' detectadas:", count);
+    chrome.storage.local.set({ patatasFinas: totalFinas }, () => {
+        console.log("📌 Patatas guardadas:", totalFinas);
+    });
 
-    try {
-        chrome.storage.local.set({ patatasFinas: count }, () => {
-            console.log("📌 Guardado en storage:", count);
-        });
-    } catch (err) {
-        console.warn("⚠ Error al guardar en storage:", err.message);
+    window._goikoState = window._goikoState || {};
+    window._goikoState.patatas = totalFinas;
+
+    if (
+        window._goikoState.panG !== undefined &&
+        window._goikoState.orden !== undefined
+    ) {
+        displayFloatingDashboard(
+            window._goikoState.panG,
+            window._goikoState.panP,
+            window._goikoState.orden,
+            totalFinas
+        );
     }
-
-    displayFinasFloatingWindow(count);
 }
 
-// Ejecutar cada 3 segundos para actualizar la información
+// Ejecutar cada 3 segundos
 setInterval(() => {
     if (typeof chrome !== "undefined" && chrome.storage) {
         countFinas();

@@ -9,39 +9,64 @@
                 font-family: Arial, sans-serif;
                 background: #202020;
                 color: white;
-                text-align: center;
-                width: 240px;
-                padding: 20px;
+                margin: 0;
+                padding: 10px;
+                width: 280px;
+            }
+
+            .dashboard {
+                display: flex;
+                flex-direction: row;
+                gap: 12px;
+                justify-content: center;
+                align-items: flex-start;
+            }
+
+            .card {
+                background: #0b83c8;
+                color: #fff;
+                padding: 10px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 500;
+                box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+                min-width: 110px;
+                flex: 1;
+            }
+
+            .orden {
+                font-size: 13px;
+                font-weight: 600;
+                opacity: 0.9;
+                margin-top: 6px;
+                word-wrap: break-word;
             }
 
             h1 {
-                font-size: 20px;
-                margin-bottom: 10px;
-            }
-
-            .count {
-                font-size: 20px;
-                font-weight: bold;
-                margin: 5px 0;
-            }
-
-            .label {
-                font-size: 14px;
-                margin: 0;
+                font-size: 18px;
+                margin-bottom: 12px;
+                text-align: center;
             }
         </style>
     </head>
     <body>
-        <h1>🍟 Goikounter</h1>
+        <h1>🍔 Goikounter</h1>
 
-        <p class="label">Patatas Finas:</p>
-        <p id="counter" class="count">0</p>
+        <div class="dashboard">
+            <div class="card">
+                <div><strong>Panes 🥖</strong></div>
+                <div>
+                    G: <span id="panGrande">0</span> / P:
+                    <span id="panPequeno">0</span>
+                </div>
+                <div id="ordenPanes" class="orden"></div>
+            </div>
 
-        <p class="label">🥖 Panes Grandes:</p>
-        <p id="panGrande" class="count">0</p>
-
-        <p class="label">🥐 Panes Pequeños:</p>
-        <p id="panPequeno" class="count">0</p>
+            <div class="card">
+                <div><strong>Patatas 🍟</strong></div>
+                <div>Finas: <span id="patatasFinas">0</span></div>
+            </div>
+        </div>
 
         <script src="popup.js"></script>
     </body>
