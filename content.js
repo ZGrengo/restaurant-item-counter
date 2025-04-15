@@ -211,10 +211,42 @@ function countFinas() {
 }
 
 // Ejecutar cada 3 segundos
+function detectarPedidoManual() {
+    chrome.storage.local.get("codigoPedidoManual", (data) => {
+        const codigoManual = (data.codigoPedidoManual || "")
+            .trim()
+            .toUpperCase();
+        if (!codigoManual) return;
+
+        const pedidos = document.querySelectorAll(".ticket-note i.ng-binding");
+
+        pedidos.forEach((elem) => {
+            const texto = elem.innerText.toUpperCase();
+            if (texto.includes(codigoManual)) {
+                console.log("🚨 Pedido manual detectado:", codigoManual);
+                chrome.storage.local.remove("codigoPedidoManual"); // evitar repeticiones
+                reproducirAlerta();
+            }
+        });
+    });
+}
+
+function reproducirAlerta() {
+    const audio = new Audio(chrome.runtime.getURL("alerta.mp3")); // ⚠️ poné el archivo en la raíz
+    audio.volume = 1;
+    audio
+        .play()
+        .catch((err) =>
+            console.warn("🔇 No se pudo reproducir el sonido:", err)
+        );
+}
+
+// Añadí esto dentro del setInterval general
 setInterval(() => {
     if (typeof chrome !== "undefined" && chrome.storage) {
         countFinas();
         countPanes();
+        detectarPedidoManual(); // 👈 esta línea
     } else {
         console.warn("⛔ chrome.storage no disponible aún.");
     }

@@ -20,6 +20,7 @@
                 gap: 12px;
                 justify-content: center;
                 align-items: flex-start;
+                margin-bottom: 12px;
             }
 
             .card {
@@ -47,10 +48,33 @@
                 margin-bottom: 12px;
                 text-align: center;
             }
+
+            input {
+                width: 95%;
+                padding: 6px;
+                border-radius: 4px;
+                border: none;
+                margin-top: 2px;
+                font-size: 14px;
+            }
+            button {
+                width: 100%;
+                padding: 6px;
+                border-radius: 4px;
+                border: none;
+                font-size: 14px;
+            }
+
+            button {
+                background: #fff;
+                color: #0b83c8;
+                font-weight: bold;
+                margin-top: 6px;
+            }
         </style>
     </head>
     <body>
-        <h1>🍔 Goikounter</h1>
+        <h1>🍟 Goikounter</h1>
 
         <div class="dashboard">
             <div class="card">
@@ -59,13 +83,18 @@
                     G: <span id="panGrande">0</span> / P:
                     <span id="panPequeno">0</span>
                 </div>
-                <div id="ordenPanes" class="orden"></div>
             </div>
 
             <div class="card">
                 <div><strong>Patatas 🍟</strong></div>
                 <div>Finas: <span id="patatasFinas">0</span></div>
             </div>
+        </div>
+
+        <div class="card">
+            <strong>Pedido Manual</strong><br />
+            <input type="text" id="pedidoManualInput" placeholder="Código..." />
+            <button id="guardarCodigo">Guardar código</button>
         </div>
 
         <script src="popup.js"></script>
