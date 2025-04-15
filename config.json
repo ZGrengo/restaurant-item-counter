@@ -1,0 +1,8 @@
+{
+    "itemMap": {
+        "kevin bacon": "G",
+        "don vito": "P"
+    },
+    "keywordsSameValue": ["patatas finas", "house fries"],
+    "pollingIntervalMs": 3000
+}

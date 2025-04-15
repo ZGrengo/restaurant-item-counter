@@ -24,7 +24,7 @@
     },
     "web_accessible_resources": [
         {
-            "resources": ["alerta.mp3"],
+            "resources": ["alerta.mp3", "config.json"],
             "matches": ["<all_urls>"]
         }
     ]

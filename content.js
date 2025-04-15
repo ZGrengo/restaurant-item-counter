@@ -1,4 +1,4 @@
-console.log("🧠 content.js inicializado");
+console.log("🧠 Goikounter content.js inicializado");
 
 const burgerPanMap = {
     "m-30": "G",
@@ -10,15 +10,15 @@ const burgerPanMap = {
     "bomba sexy 2.0": "G",
     "la greenchofa": "G",
     pigma: "G",
-    moza: "G",
-    kikiller: "G",
+    "la moza": "G",
+    "la kikiller": "G",
     "the beast": "G",
     "don vito": "P",
     "mas-s-mash": "P",
     "hat trick": "P",
     "la muslona": "P",
     "goiko kids": "P",
-    smashic: "P",
+    "la smashic": "P",
     "classic smash": "P",
     "basic onion smash": "P",
     "single smash": "P",
@@ -31,156 +31,51 @@ function normalizeText(text) {
         .toLowerCase();
 }
 
-// Ventana flotante unificada
-function displayFloatingDashboard(panG, panP, orden, patatasFinas) {
-    let wrapper = document.getElementById("goikounter-wrapper");
+// 🧾 Detección de código manual
+function detectarPedidoManual() {
+    chrome.storage.local.get("codigoPedidoManual", (data) => {
+        const codigoManual = (data.codigoPedidoManual || "")
+            .trim()
+            .toUpperCase();
+        if (!codigoManual) return;
 
-    if (!wrapper) {
-        wrapper = document.createElement("div");
-        wrapper.id = "goikounter-wrapper";
-        wrapper.style.position = "fixed";
-        wrapper.style.top = "2px";
-        wrapper.style.left = "140px";
-        wrapper.style.display = "flex";
-        wrapper.style.flexDirection = "row";
-        wrapper.style.gap = "12px";
-        wrapper.style.zIndex = "9999";
-        document.body.appendChild(wrapper);
-    }
-
-    // Contenedor de panes
-    let panesDiv = document.getElementById("goikounter-panes");
-    if (!panesDiv) {
-        panesDiv = document.createElement("div");
-        panesDiv.id = "goikounter-panes";
-        panesDiv.style.background = "#0B83C8";
-        panesDiv.style.color = "#fff";
-        panesDiv.style.padding = "10px";
-        panesDiv.style.borderRadius = "8px";
-        panesDiv.style.fontFamily = "Arial, sans-serif";
-        panesDiv.style.fontSize = "16px";
-        panesDiv.style.minWidth = "130px";
-        panesDiv.style.boxShadow = "0 0 6px rgba(0,0,0,0.4)";
-        wrapper.appendChild(panesDiv);
-    }
-
-    panesDiv.innerHTML = `
-        Panes🥖 G: ${panG} / P: ${panP}<br>
-        <span style="font-size:16px;opacity:0.8;font-weight:600;">${orden}</span>
-    `;
-
-    // Contenedor patatas
-    let patatasDiv = document.getElementById("goikounter-patatas");
-    if (!patatasDiv) {
-        patatasDiv = document.createElement("div");
-        patatasDiv.id = "goikounter-patatas";
-        patatasDiv.style.background = "#0B83C8";
-        patatasDiv.style.color = "#fff";
-        patatasDiv.style.padding = "10px";
-        patatasDiv.style.borderRadius = "8px";
-        patatasDiv.style.fontFamily = "Arial, sans-serif";
-        patatasDiv.style.fontSize = "16px";
-        patatasDiv.style.minWidth = "90px";
-        patatasDiv.style.boxShadow = "0 0 6px rgba(0,0,0,0.4)";
-        wrapper.appendChild(patatasDiv);
-    }
-
-    patatasDiv.innerHTML = `
-        <strong>Patatas 🍟 </strong><br>
-         Finas: ${patatasFinas}
-    `;
-}
-
-// Contar panes
-function countPanes() {
-    const items = document.querySelectorAll(".item-name.ng-binding");
-    let panG = 0;
-    let panP = 0;
-    let panOrder = [];
-
-    items.forEach((item) => {
-        let rawText = item.innerText.trim(); // "2 x Kevin Bacon"
-        let match = rawText.match(/^(\d+)\s*x\s*/);
-        let quantity = match ? parseInt(match[1]) : 1;
-
-        let burgerName = normalizeText(
-            rawText.replace(/^(\d+\s*x\s*)/, "").trim()
-        );
-
-        let panType = burgerPanMap[burgerName];
-
-        if (panType === "G") {
-            panG += quantity;
-            for (let i = 0; i < quantity; i++) panOrder.push("Gr");
-        } else if (panType === "P") {
-            panP += quantity;
-            for (let i = 0; i < quantity; i++) panOrder.push("Pq");
-        } else {
-            console.warn("❓ Burger no encontrada en el mapa:", burgerName);
-        }
-    });
-
-    // Agrupar el orden por secuencias consecutivas
-    let finalOrder = [];
-    let current = null;
-    let count = 0;
-
-    for (let i = 0; i <= panOrder.length; i++) {
-        if (panOrder[i] === current) {
-            count++;
-        } else {
-            if (current !== null) {
-                finalOrder.push(`${current}x${count}`);
+        const pedidos = document.querySelectorAll(".ticket-note i.ng-binding");
+        pedidos.forEach((elem) => {
+            const texto = elem.innerText.toUpperCase();
+            if (texto.includes(codigoManual)) {
+                console.log("🚨 Pedido manual detectado:", codigoManual);
+                chrome.storage.local.remove("codigoPedidoManual");
+                reproducirAlerta();
             }
-            current = panOrder[i];
-            count = 1;
-        }
-    }
-
-    const ordenString = finalOrder.join("-");
-
-    // Guardar también en storage (opcional)
-    chrome.storage.local.set(
-        {
-            panGrande: panG,
-            panPequeno: panP,
-            ordenPanes: ordenString,
-        },
-        () => console.log("📌 Panes guardados")
-    );
-
-    // Compartir datos para la ventana flotante
-    window._goikoState = window._goikoState || {};
-    window._goikoState.panG = panG;
-    window._goikoState.panP = panP;
-    window._goikoState.orden = ordenString;
-
-    if (window._goikoState.patatas !== undefined) {
-        displayFloatingDashboard(
-            panG,
-            panP,
-            ordenString,
-            window._goikoState.patatas
-        );
-    }
+        });
+    });
 }
 
-// Contar Patatas Finas
+function reproducirAlerta() {
+    const audio = new Audio(chrome.runtime.getURL("alerta.mp3"));
+    audio.volume = 1;
+    audio
+        .play()
+        .catch((err) =>
+            console.warn("🔇 No se pudo reproducir el sonido:", err)
+        );
+}
+
+// 🍟 Conteo de patatas
 function countFinas() {
     let orders = document.querySelectorAll(".item-name.ng-binding");
     let totalFinas = 0;
 
     orders.forEach((item) => {
-        let rawText = item.innerText.trim(); // "2 x Kevin Bacon"
-        let match = rawText.match(/^(\d+)\s*x\s*/);
-        let quantity = match ? parseInt(match[1]) : 1;
+        const match = item.innerText.match(/^(\d+)\s*x\s*/);
+        const quantity = match ? parseInt(match[1]) : 1;
 
         const variationContainer = item.parentElement.querySelectorAll(
             ".item-variation.ng-scope span.ng-binding"
         );
 
         variationContainer.forEach((span) => {
-            let text = span.innerText.trim();
+            const text = span.innerText.trim();
             if (
                 text.includes("Patatas Finas") ||
                 text.includes("House fries")
@@ -190,63 +85,165 @@ function countFinas() {
         });
     });
 
-    chrome.storage.local.set({ patatasFinas: totalFinas }, () => {
-        console.log("📌 Patatas guardadas:", totalFinas);
-    });
-
+    chrome.storage.local.set({ patatasFinas: totalFinas });
     window._goikoState = window._goikoState || {};
     window._goikoState.patatas = totalFinas;
-
-    if (
-        window._goikoState.panG !== undefined &&
-        window._goikoState.orden !== undefined
-    ) {
-        displayFloatingDashboard(
-            window._goikoState.panG,
-            window._goikoState.panP,
-            window._goikoState.orden,
-            totalFinas
-        );
-    }
 }
 
-// Ejecutar cada 3 segundos
-function detectarPedidoManual() {
-    chrome.storage.local.get("codigoPedidoManual", (data) => {
-        const codigoManual = (data.codigoPedidoManual || "")
-            .trim()
-            .toUpperCase();
-        if (!codigoManual) return;
+// 🥖 Conteo de panes por tipo
+function countPanesPorTipo() {
+    const pedidos = document.querySelectorAll("md-card-content.ticketItems");
+    const resultados = {
+        sala: { G: 0, P: 0, orden: [] },
+        delivery: { G: 0, P: 0, orden: [] },
+    };
 
-        const pedidos = document.querySelectorAll(".ticket-note i.ng-binding");
+    pedidos.forEach((pedido) => {
+        const tipoTexto = (
+            pedido.previousElementSibling?.querySelector(
+                ".md-subhead.ng-binding.flex"
+            )?.innerText || ""
+        ).toLowerCase();
 
-        pedidos.forEach((elem) => {
-            const texto = elem.innerText.toUpperCase();
-            if (texto.includes(codigoManual)) {
-                console.log("🚨 Pedido manual detectado:", codigoManual);
-                chrome.storage.local.remove("codigoPedidoManual"); // evitar repeticiones
-                reproducirAlerta();
+        let tipo = null;
+        let esBasic = false;
+
+        if (
+            tipoTexto.includes("delivery basics") ||
+            tipoTexto.includes("delivery dk")
+        ) {
+            tipo = "delivery";
+            esBasic = true; // ← este es el truco
+        } else if (tipoTexto.includes("delivery")) {
+            tipo = "delivery";
+        } else if (tipoTexto.includes("sala")) {
+            tipo = "sala";
+        }
+
+        if (!tipo) return;
+
+        const items = pedido.querySelectorAll(".item-name.ng-binding");
+
+        items.forEach((item) => {
+            const rawText = item.innerText.trim();
+            const match = rawText.match(/^(\d+)\s*x\s*/);
+            const quantity = match ? parseInt(match[1]) : 1;
+
+            const burgerName = normalizeText(
+                rawText.replace(/^(\d+\s*x\s*)/, "").trim()
+            );
+
+            const panType = burgerPanMap[burgerName];
+
+            if (panType === "G") {
+                resultados[tipo].G += quantity;
+                if (!esBasic) {
+                    for (let i = 0; i < quantity; i++)
+                        resultados[tipo].orden.push("Gr");
+                }
+            } else if (panType === "P") {
+                resultados[tipo].P += quantity;
+                if (!esBasic) {
+                    for (let i = 0; i < quantity; i++)
+                        resultados[tipo].orden.push("Pq");
+                }
             }
         });
     });
+
+    // Armar string de orden por tipo
+    for (let tipo in resultados) {
+        const arr = resultados[tipo].orden;
+        let finalOrden = [];
+        let current = null;
+        let count = 0;
+
+        for (let i = 0; i <= arr.length; i++) {
+            if (arr[i] === current) {
+                count++;
+            } else {
+                if (current !== null) finalOrden.push(`${current}x${count}`);
+                current = arr[i];
+                count = 1;
+            }
+        }
+
+        resultados[tipo].ordenString = finalOrden.join("-");
+    }
+
+    console.log("📦 Conteo de panes por tipo:", resultados);
+
+    chrome.storage.local.set({
+        panesSala: resultados.sala,
+        panesDelivery: resultados.delivery,
+    });
+
+    displayPanesPorTipo(resultados);
 }
 
-function reproducirAlerta() {
-    const audio = new Audio(chrome.runtime.getURL("alerta.mp3")); // ⚠️ poné el archivo en la raíz
-    audio.volume = 1;
-    audio
-        .play()
-        .catch((err) =>
-            console.warn("🔇 No se pudo reproducir el sonido:", err)
-        );
+// 🧾 Mostrar contadores en pantalla
+function displayPanesPorTipo(resultados) {
+    const existing = document.getElementById("goikounter-wrapper");
+    if (existing) existing.remove();
+
+    const wrapper = document.createElement("div");
+    wrapper.id = "goikounter-wrapper";
+    wrapper.style.position = "fixed";
+    wrapper.style.top = "2px";
+    wrapper.style.left = "140px";
+    wrapper.style.display = "flex";
+    wrapper.style.flexDirection = "row";
+    wrapper.style.gap = "12px";
+    wrapper.style.zIndex = "9999";
+    document.body.appendChild(wrapper);
+
+    for (let tipo of ["sala", "delivery"]) {
+        const data = resultados[tipo];
+        const div = document.createElement("div");
+        div.className = "goikounter-block";
+        div.style.background = "#0B83C8";
+        div.style.color = "#fff";
+        div.style.padding = "10px";
+        div.style.borderRadius = "8px";
+        div.style.fontFamily = "Arial, sans-serif";
+        div.style.fontSize = "16px";
+        div.style.minWidth = "110px";
+        div.style.boxShadow = "0 0 6px rgba(0,0,0,0.4)";
+        div.innerHTML = `
+            <strong>${tipo.toUpperCase()}</strong>
+            G: ${data.G} / P: ${data.P}<br>
+            <span style="font-size:16px;font-weight:600;">${
+                data.ordenString
+            }</span>
+        `;
+        wrapper.appendChild(div);
+    }
+
+    // 🟦 Patatas finas
+    const patatas = window._goikoState?.patatas ?? 0;
+    const patatasDiv = document.createElement("div");
+    patatasDiv.className = "goikounter-block";
+    patatasDiv.style.background = "#0B83C8";
+    patatasDiv.style.color = "#fff";
+    patatasDiv.style.padding = "10px";
+    patatasDiv.style.borderRadius = "8px";
+    patatasDiv.style.fontFamily = "Arial, sans-serif";
+    patatasDiv.style.fontSize = "16px";
+    patatasDiv.style.minWidth = "90px";
+    patatasDiv.style.boxShadow = "0 0 6px rgba(0,0,0,0.4)";
+    patatasDiv.innerHTML = `
+        <strong>PATATAS 🍟</strong><br>
+        Finas: ${patatas}
+    `;
+    wrapper.appendChild(patatasDiv);
 }
 
-// Añadí esto dentro del setInterval general
+// 🔁 Intervalo principal
 setInterval(() => {
-    if (typeof chrome !== "undefined" && chrome.storage) {
+    if (chrome?.storage) {
         countFinas();
-        countPanes();
-        detectarPedidoManual(); // 👈 esta línea
+        countPanesPorTipo();
+        detectarPedidoManual();
     } else {
         console.warn("⛔ chrome.storage no disponible aún.");
     }
