@@ -1,8 +1,27 @@
 {
-    "itemMap": {
+    "burgerPanMap": {
+        "m-30": "G",
         "kevin bacon": "G",
-        "don vito": "P"
+        "kevin costner": "G",
+        "kevin chingona": "G",
+        "la kiki": "G",
+        "retro": "G",
+        "bomba sexy 2.0": "G",
+        "la greenchofa": "G",
+        "pigma": "G",
+        "la moza": "G",
+        "la kikiller": "G",
+        "the beast": "G",
+        "don vito": "P",
+        "mas-s-mash": "P",
+        "hat trick": "P",
+        "la muslona": "P",
+        "goiko kids": "P",
+        "la smashic": "P",
+        "classic smash": "P",
+        "basic onion smash": "P",
+        "single smash": "P"
     },
-    "keywordsSameValue": ["patatas finas", "house fries"],
+    "keywordsPatatas": ["patatas finas", "house fries"],
     "pollingIntervalMs": 3000
 }

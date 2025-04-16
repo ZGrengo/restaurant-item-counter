@@ -1,28 +1,47 @@
 console.log("🧠 Goikounter content.js inicializado");
 
-const burgerPanMap = {
-    "m-30": "G",
-    "kevin bacon": "G",
-    "kevin costner": "G",
-    "kevin chingona": "G",
-    "la kiki": "G",
-    retro: "G",
-    "bomba sexy 2.0": "G",
-    "la greenchofa": "G",
-    pigma: "G",
-    "la moza": "G",
-    "la kikiller": "G",
-    "the beast": "G",
-    "don vito": "P",
-    "mas-s-mash": "P",
-    "hat trick": "P",
-    "la muslona": "P",
-    "goiko kids": "P",
-    "la smashic": "P",
-    "classic smash": "P",
-    "basic onion smash": "P",
-    "single smash": "P",
+let CONFIG = {
+    burgerPanMap: {},
+    keywordsPatatas: ["patatas finas", "house fries"],
+    pollingIntervalMs: 3000,
 };
+
+async function cargarConfiguracion() {
+    try {
+        const url = chrome.runtime.getURL("config.json");
+        const res = await fetch(url);
+        const data = await res.json();
+
+        // ✅ Normalizar claves del mapa de burgers
+        const normalizado = {};
+        for (let key in data.burgerPanMap) {
+            const keyNorm = normalizeText(key);
+            normalizado[keyNorm] = data.burgerPanMap[key];
+        }
+        data.burgerPanMap = normalizado;
+
+        CONFIG = data;
+        console.log("✅ Config cargada y normalizada:", CONFIG);
+
+        iniciarContadores();
+    } catch (err) {
+        console.warn(
+            "⚠️ No se pudo cargar config.json, usando valores por defecto.",
+            err
+        );
+        iniciarContadores();
+    }
+}
+
+function iniciarContadores() {
+    setInterval(() => {
+        if (chrome?.storage) {
+            countFinas();
+            countPanesPorTipo();
+            detectarPedidoManual();
+        }
+    }, CONFIG.pollingIntervalMs || 3000);
+}
 
 function normalizeText(text) {
     return text
@@ -40,6 +59,7 @@ function detectarPedidoManual() {
         if (!codigoManual) return;
 
         const pedidos = document.querySelectorAll(".ticket-note i.ng-binding");
+        console.log("🧾 Pedidos encontrados:", pedidos.length);
         pedidos.forEach((elem) => {
             const texto = elem.innerText.toUpperCase();
             if (texto.includes(codigoManual)) {
@@ -76,12 +96,11 @@ function countFinas() {
 
         variationContainer.forEach((span) => {
             const text = span.innerText.trim();
-            if (
-                text.includes("Patatas Finas") ||
-                text.includes("House fries")
-            ) {
-                totalFinas += quantity;
-            }
+            CONFIG.keywordsPatatas.forEach((keyword) => {
+                if (text.toLowerCase().includes(keyword.toLowerCase())) {
+                    totalFinas += quantity;
+                }
+            });
         });
     });
 
@@ -90,12 +109,12 @@ function countFinas() {
     window._goikoState.patatas = totalFinas;
 }
 
-// 🥖 Conteo de panes por tipo
+// 🍔 Conteo de panes por tipo
 function countPanesPorTipo() {
     const pedidos = document.querySelectorAll("md-card-content.ticketItems");
     const resultados = {
-        sala: { G: 0, P: 0, orden: [] },
-        delivery: { G: 0, P: 0, orden: [] },
+        sala: { G: 0, P: 0, orden: [], panVegano: 0 },
+        delivery: { G: 0, P: 0, orden: [], panVegano: 0 },
     };
 
     pedidos.forEach((pedido) => {
@@ -113,7 +132,7 @@ function countPanesPorTipo() {
             tipoTexto.includes("delivery dk")
         ) {
             tipo = "delivery";
-            esBasic = true; // ← este es el truco
+            esBasic = true;
         } else if (tipoTexto.includes("delivery")) {
             tipo = "delivery";
         } else if (tipoTexto.includes("sala")) {
@@ -133,19 +152,39 @@ function countPanesPorTipo() {
                 rawText.replace(/^(\d+\s*x\s*)/, "").trim()
             );
 
-            const panType = burgerPanMap[burgerName];
+            const panType = CONFIG.burgerPanMap[burgerName];
+
+            const variaciones = item.parentElement.querySelectorAll(
+                ".item-variation.ng-scope span.ng-binding"
+            );
+
+            let tienePanVegano = false;
+            variaciones.forEach((span) => {
+                const txt = span.innerText.trim().toLowerCase();
+                if (txt.includes("pan vegano") || txt.includes("s/gluten")) {
+                    tienePanVegano = true;
+                }
+            });
 
             if (panType === "G") {
                 resultados[tipo].G += quantity;
+
                 if (!esBasic) {
-                    for (let i = 0; i < quantity; i++)
-                        resultados[tipo].orden.push("Gr");
+                    for (let i = 0; i < quantity; i++) {
+                        if (tienePanVegano) {
+                            resultados[tipo].orden.push("VG");
+                            resultados[tipo].panVegano += 1;
+                        } else {
+                            resultados[tipo].orden.push("Gr");
+                        }
+                    }
                 }
             } else if (panType === "P") {
                 resultados[tipo].P += quantity;
                 if (!esBasic) {
-                    for (let i = 0; i < quantity; i++)
+                    for (let i = 0; i < quantity; i++) {
                         resultados[tipo].orden.push("Pq");
+                    }
                 }
             }
         });
@@ -210,8 +249,10 @@ function displayPanesPorTipo(resultados) {
         div.style.minWidth = "110px";
         div.style.boxShadow = "0 0 6px rgba(0,0,0,0.4)";
         div.innerHTML = `
-            <strong>${tipo.toUpperCase()}</strong>
-            G: ${data.G} / P: ${data.P}<br>
+            <strong>${tipo.toUpperCase()}</strong> 🍔
+            G: ${data.G} / P: ${data.P} ${
+            data.panVegano > 0 ? `🌱 VG: ${data.panVegano}` : ""
+        }</br>
             <span style="font-size:16px;font-weight:600;">${
                 data.ordenString
             }</span>
@@ -238,13 +279,4 @@ function displayPanesPorTipo(resultados) {
     wrapper.appendChild(patatasDiv);
 }
 
-// 🔁 Intervalo principal
-setInterval(() => {
-    if (chrome?.storage) {
-        countFinas();
-        countPanesPorTipo();
-        detectarPedidoManual();
-    } else {
-        console.warn("⛔ chrome.storage no disponible aún.");
-    }
-}, 3000);
+cargarConfiguracion();

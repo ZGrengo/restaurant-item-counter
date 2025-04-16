@@ -1,35 +1,36 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Cargar valores desde storage
-    chrome.storage.local.get(
-        [
-            "patatasFinas",
-            "panGrande",
-            "panPequeno",
-            "ordenPanes",
-            "codigoPedidoManual",
-        ],
-        (data) => {
-            document.getElementById("patatasFinas").innerText =
-                data.patatasFinas ?? 0;
-            document.getElementById("panGrande").innerText =
-                data.panGrande ?? 0;
-            document.getElementById("panPequeno").innerText =
-                data.panPequeno ?? 0;
-            document.getElementById("ordenPanes").innerText =
-                data.ordenPanes ?? "";
-            document.getElementById("pedidoManualInput").value =
-                data.codigoPedidoManual || "";
-        }
-    );
+    function updateCounter() {
+        chrome.storage.local.get(
+            ["panesSala", "panesDelivery", "patatasFinas"],
+            (data) => {
+                const panG =
+                    (data.panesSala?.G || 0) + (data.panesDelivery?.G || 0);
+                const panP =
+                    (data.panesSala?.P || 0) + (data.panesDelivery?.P || 0);
+                const panVG =
+                    (data.panesSala?.panVegano || 0) +
+                    (data.panesDelivery?.panVegano || 0);
+                const patatas = data.patatasFinas || 0;
 
-    // Guardar código de pedido manual
+                document.getElementById("panGrande").innerText = panG;
+                document.getElementById("panPequeno").innerText = panP;
+                document.getElementById("panVegano").innerText = panVG;
+                document.getElementById("patatasFinas").innerText = patatas;
+            }
+        );
+    }
+
+    updateCounter();
+
+    chrome.storage.onChanged.addListener(() => {
+        updateCounter();
+    });
+
     document.getElementById("guardarCodigo").addEventListener("click", () => {
-        const codigo = document
-            .getElementById("pedidoManualInput")
-            .value.trim();
-        if (codigo) {
-            chrome.storage.local.set({ codigoPedidoManual: codigo }, () => {
-                alert(`✅ Código "${codigo}" guardado`);
+        const input = document.getElementById("pedidoManualInput").value.trim();
+        if (input) {
+            chrome.storage.local.set({
+                codigoPedidoManual: input.toUpperCase(),
             });
         }
     });

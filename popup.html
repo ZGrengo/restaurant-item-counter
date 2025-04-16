@@ -26,13 +26,21 @@
             .card {
                 background: #0b83c8;
                 color: #fff;
-                padding: 10px;
+                padding: 6px;
                 border-radius: 8px;
                 font-size: 16px;
                 font-weight: 500;
                 box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
                 min-width: 110px;
                 flex: 1;
+            }
+
+            .card-panes {
+                flex-grow: 2;
+            }
+
+            .card-patatas {
+                flex-grow: 1;
             }
 
             .orden {
@@ -74,18 +82,20 @@
         </style>
     </head>
     <body>
-        <h1>🍟 Goikounter</h1>
+        <h1>🍔 Goikounter 🍟</h1>
 
         <div class="dashboard">
-            <div class="card">
-                <div><strong>Panes 🥖</strong></div>
+            <div class="card card-panes">
+                <div><strong>Panes 🍔</strong></div>
                 <div>
                     G: <span id="panGrande">0</span> / P:
-                    <span id="panPequeno">0</span>
+                    <span id="panPequeno">0</span> / VG:<span id="panVegano"
+                        >0</span
+                    >
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card card-patatas">
                 <div><strong>Patatas 🍟</strong></div>
                 <div>Finas: <span id="patatasFinas">0</span></div>
             </div>
